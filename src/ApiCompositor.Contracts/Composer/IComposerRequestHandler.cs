@@ -1,4 +1,4 @@
-﻿namespace ApiCompositor.Contracts;
+﻿namespace ApiCompositor.Contracts.Composer;
 
 public interface IComposerRequestHandler
 {

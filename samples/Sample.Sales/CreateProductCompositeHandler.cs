@@ -1,4 +1,5 @@
 ﻿using ApiCompositor.Contracts;
+using ApiCompositor.Contracts.Composite;
 using Microsoft.Extensions.Logging;
 using Sample.Compositor.Contracts;
 

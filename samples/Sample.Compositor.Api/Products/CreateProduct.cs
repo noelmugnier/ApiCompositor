@@ -1,4 +1,5 @@
 ﻿using ApiCompositor.Contracts;
+using ApiCompositor.Contracts.Composer;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authorization;
 using Sample.Compositor.Contracts;

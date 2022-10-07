@@ -1,3 +1,4 @@
+using ApiCompositor.DependencyInjection;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Sample.Marketing;

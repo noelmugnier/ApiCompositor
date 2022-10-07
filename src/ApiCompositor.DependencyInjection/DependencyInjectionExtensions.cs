@@ -1,13 +1,16 @@
 ﻿using System.Reflection;
-using ApiCompositor;
 using ApiCompositor.Contracts;
+using ApiCompositor.Contracts.Composer;
+using ApiCompositor.Contracts.Composite;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace ApiCompositor.DependencyInjection;
 
 public static class DependencyInjectionExtensions
 {
     public static IServiceCollection AddApiCompositor(this IServiceCollection services)
     {
+        services.AddScoped<ICompositorProvider, CompositorProvider>();
         services.AddScoped<IComposerQueryHandler, ComposerQueryHandler>();
         services.AddScoped<IComposerRequestHandler, ComposerRequestHandler>();
         return services;

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using ApiCompositor.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Sample.Sales;
 

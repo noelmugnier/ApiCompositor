@@ -1,4 +1,5 @@
 ﻿using ApiCompositor.Contracts;
+using ApiCompositor.Contracts.Composite;
 using Sample.Compositor.Contracts;
 
 namespace Sample.Sales;

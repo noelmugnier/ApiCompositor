@@ -1,6 +1,9 @@
-﻿namespace ApiCompositor.Contracts;
+﻿using ApiCompositor.Contracts.Composer;
+using ApiCompositor.Contracts.Composite;
 
-public interface ICompositorMapper<TApiRequest, TComposite, TCompositeResponse>
+namespace ApiCompositor.Contracts;
+
+public interface ICompositorMapper<in TApiRequest, out TComposite, TCompositeResponse>
     where TApiRequest : IComposer
     where TComposite : IComposite<TCompositeResponse>
 {

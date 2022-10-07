@@ -1,13 +1,14 @@
 ﻿using ApiCompositor.Contracts;
+using ApiCompositor.Contracts.Composer;
 using ApiCompositor.Internal;
 
 namespace ApiCompositor;
 
-internal class ComposerRequestHandler : IComposerRequestHandler
+public class ComposerRequestHandler : IComposerRequestHandler
 {
-    private readonly IServiceProvider _provider;
+    private readonly ICompositorProvider _provider;
 
-    public ComposerRequestHandler(IServiceProvider provider)
+    public ComposerRequestHandler(ICompositorProvider provider)
     {
         _provider = provider;
     }
