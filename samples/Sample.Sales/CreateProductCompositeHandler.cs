@@ -4,7 +4,12 @@ using Sample.Compositor.Contracts;
 
 namespace Sample.Sales;
 
-public class CreateProductCompositeHandler : ICompositeRequestHandler<CreateProduct, SalesProduct>
+public record CreateSalesProduct(string RequestId, Guid Id, decimal Price) : ICompositeRequest<SalesProduct>
+{
+    public DateTimeOffset RequestedOn { get; } = DateTimeOffset.UtcNow;
+}
+
+public class CreateProductCompositeHandler : ICompositeRequestHandler<CreateSalesProduct, SalesProduct>
 {
     private readonly ILogger<CreateProductCompositeHandler> _logger;
 
@@ -13,14 +18,22 @@ public class CreateProductCompositeHandler : ICompositeRequestHandler<CreateProd
         _logger = logger;
     }
         
-    public Task<SalesProduct> Handle(string requestId, CreateProduct resource, CancellationToken token)
+    public Task<SalesProduct> Handle(CreateSalesProduct resource, CancellationToken token)
     {
         return Task.FromResult(new SalesProduct(resource.Id, resource.Price));
     }
 
-    public Task OnError(string requestId, CancellationToken token)
+    public Task Revert(string requestId, CancellationToken token)
     {
         _logger.LogWarning($"An error occured on request {requestId}");
         return Task.CompletedTask;
+    }
+}
+
+public class CreateProductCompositorMapper : ICompositorMapper<CreateComposerProduct, CreateSalesProduct, SalesProduct>
+{
+    public CreateSalesProduct Map(CreateComposerProduct request)
+    {
+        return new CreateSalesProduct(request.RequestId, request.Id, request.Price);
     }
 }

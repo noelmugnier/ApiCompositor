@@ -4,7 +4,12 @@ using Sample.Compositor.Contracts;
 
 namespace Sample.Marketing;
 
-public class CreateProductCompositeHandler : ICompositeRequestHandler<CreateProduct, MarketingProduct>
+public record CreateMarketingProduct(string RequestId, Guid Id, string Name, string? Description = null) : ICompositeRequest<MarketingProduct>
+{
+    public DateTimeOffset RequestedOn { get; } = DateTimeOffset.UtcNow;
+}
+
+public class CreateProductCompositeHandler : ICompositeRequestHandler<CreateMarketingProduct, MarketingProduct>
 {
     private readonly ILogger<CreateProductCompositeHandler> _logger;
 
@@ -13,14 +18,22 @@ public class CreateProductCompositeHandler : ICompositeRequestHandler<CreateProd
         _logger = logger;
     }
 
-    public Task<MarketingProduct> Handle(string requestId, CreateProduct resource, CancellationToken token)
+    public Task<MarketingProduct> Handle(CreateMarketingProduct resource, CancellationToken token)
     {
         return Task.FromResult(new MarketingProduct(resource.Id, resource.Name));
     }
 
-    public Task OnError(string requestId, CancellationToken token)
+    public Task Revert(string requestId, CancellationToken token)
     {
         _logger.LogWarning("An error occured on request {RequestId}", requestId);
         return Task.CompletedTask;
+    }
+}
+
+public class CreateProductCompositorMapper : ICompositorMapper<CreateComposerProduct, CreateMarketingProduct, MarketingProduct>
+{
+    public CreateMarketingProduct Map(CreateComposerProduct request)
+    {
+        return new CreateMarketingProduct(request.RequestId, request.Id, request.Name, request.Description);
     }
 }

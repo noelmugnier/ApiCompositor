@@ -1,4 +1,3 @@
-using ApiCompositor;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Sample.Marketing;

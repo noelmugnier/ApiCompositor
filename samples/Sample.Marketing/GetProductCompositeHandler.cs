@@ -3,10 +3,23 @@ using Sample.Compositor.Contracts;
 
 namespace Sample.Marketing;
 
-public class GetProductCompositeHandler : ICompositeQueryHandler<GetProduct, MarketingProduct>
+public record GetMarketingProduct(string RequestId, Guid Id) : ICompositeQuery<MarketingProduct>
 {
-    public Task<MarketingProduct> Handle(string requestId, GetProduct resource, CancellationToken token)
+    public DateTimeOffset RequestedOn { get; } = DateTimeOffset.UtcNow;
+}
+
+public class GetProductCompositeHandler : ICompositeQueryHandler<GetMarketingProduct, MarketingProduct>
+{
+    public Task<MarketingProduct> Handle(GetMarketingProduct resource, CancellationToken token)
     {
         return Task.FromResult(new MarketingProduct(resource.Id, "Test"){Description = "Zeugma"});
+    }
+}
+
+public class GetProductCompositorMapper : ICompositorMapper<GetComposerProduct, GetMarketingProduct, MarketingProduct>
+{
+    public GetMarketingProduct Map(GetComposerProduct request)
+    {
+        return new GetMarketingProduct(request.RequestId, request.Id);
     }
 }

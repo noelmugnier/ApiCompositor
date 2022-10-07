@@ -13,7 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\ApiCompositor\ApiCompositor.csproj" />
       <ProjectReference Include="..\Sample.Compositor.Contracts\Sample.Compositor.Contracts.csproj" />
       <ProjectReference Include="..\Sample.Marketing\Sample.Marketing.csproj" />
       <ProjectReference Include="..\Sample.Sales\Sample.Sales.csproj" />

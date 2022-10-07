@@ -1,5 +1,5 @@
 ﻿namespace ApiCompositor.Contracts;
 
-public interface ICompositeQuery<out TResponse>
+public interface ICompositeQuery<out TResponse> : IComposite<TResponse>
 {
 }

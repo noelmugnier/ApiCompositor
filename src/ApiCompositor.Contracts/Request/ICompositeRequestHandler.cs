@@ -1,9 +1,12 @@
 ﻿namespace ApiCompositor.Contracts;
 
-public interface ICompositeRequestHandler {}
-
-public interface ICompositeRequestHandler<in TRequest, TResponse> :ICompositeRequestHandler
+public interface ICompositeRequestHandler
 {
-    Task<TResponse> Handle(string requestId, TRequest resource, CancellationToken token);
-    Task OnError(string requestId, CancellationToken token);
+}
+
+public interface ICompositeRequestHandler<in TRequest, TResponse> : ICompositeRequestHandler
+    where TRequest: ICompositeRequest<TResponse>
+{
+    Task<TResponse> Handle(TRequest resource, CancellationToken token);
+    Task Revert(string requestId, CancellationToken token);
 }

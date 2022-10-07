@@ -5,6 +5,7 @@ public interface ICompositeQueryHandler
 }
 
 public interface ICompositeQueryHandler<in TQuery, TResponse> : ICompositeQueryHandler
+    where TQuery: ICompositeQuery<TResponse>
 {
-    Task<TResponse> Handle(string requestId, TQuery resource, CancellationToken token);
+    Task<TResponse> Handle(TQuery resource, CancellationToken token);
 }
