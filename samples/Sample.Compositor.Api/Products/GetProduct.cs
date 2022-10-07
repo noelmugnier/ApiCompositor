@@ -1,13 +1,9 @@
-﻿using ApiCompositor.Contracts;
-using ApiCompositor.Contracts.Composer;
+﻿using ApiCompositor.Contracts.Composer;
 using FastEndpoints;
-using Microsoft.AspNetCore.Authorization;
 using Sample.Compositor.Contracts;
 
 namespace Sample.Compositor.Api.Products;
 
-[AllowAnonymous]
-[HttpGet("/api/products/{Id}")]
 public class GetProductEndpoint : Endpoint<GetProductQuery>
 {
     private readonly IComposerQueryHandler _requestHandler;
@@ -15,11 +11,31 @@ public class GetProductEndpoint : Endpoint<GetProductQuery>
     {
         _requestHandler = requestHandler;
     }
+    
+    public override void Configure()
+    {
+        Get("/products/{Id}");
+        AllowAnonymous();
+        Description(b => b
+                .WithGroupName("Products")
+                .WithDisplayName("GetProduct")
+                .Accepts<GetProductQuery>("application/json")
+                .Produces<ProductViewModel>(200, "application/json")
+                .ProducesProblem(400)
+                .ProducesProblem(404)
+                .ProducesProblemFE<InternalErrorResponse>(500),
+        clearDefaults: true);
+        Summary(s => {
+            s.Summary = "Retrieve a product with id";
+            s.Description = "Call multiple services (sales/marketing) to build ProductViewModel";
+            s.ExampleRequest = new GetProductQuery { Id = Guid.NewGuid()};
+        });
+    }
 
     public override async Task HandleAsync(GetProductQuery req, CancellationToken ct)
     {
         var result = await _requestHandler.Compose(new GetComposerProduct(HttpContext.TraceIdentifier, req.Id), ct);
-        await SendAsync(result.Fields, cancellation: ct);
+        await SendAsync(result, cancellation: ct);
     }
 }
 

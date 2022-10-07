@@ -1,5 +1,6 @@
 using System.Dynamic;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace ApiCompositor.Contracts;
 
@@ -28,20 +29,20 @@ public class ComposedResult : DynamicObject
     /// <summary>
     /// Cached type of the instance
     /// </summary>
-    Type InstanceType;
+    internal Type InstanceType;
 
     internal PropertyInfo[] InstancePropertyInfo
     {
         get
         {
-            if (_InstancePropertyInfo == null && Instance != null)
-                _InstancePropertyInfo = Instance.GetType()
+            if (_instancePropertyInfo == null && Instance != null)
+                _instancePropertyInfo = Instance.GetType()
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
-            return _InstancePropertyInfo;
+            return _instancePropertyInfo;
         }
     }
 
-    PropertyInfo[] _InstancePropertyInfo;
+    private PropertyInfo[] _instancePropertyInfo;
 
 
     /// <summary>
@@ -49,17 +50,20 @@ public class ComposedResult : DynamicObject
     /// stored on this object/instance
     /// </summary>        
     /// <remarks>Using PropertyBag to support XML Serialization of the dictionary</remarks>
-    private Dictionary<string, object> _properties = new Dictionary<string, object>();
+    [JsonExtensionData]
+    public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+    
+    [JsonPropertyName("_errors")]
+    public List<Error>? Errors { get; private set; } = null;
 
-    public Dictionary<string, object> Errors { get; } = new Dictionary<string, object>();
-
-    public bool AddError(string name, object value)
+    public void AddError(string name, string message, Exception? exception = null)
     {
-        return Errors.TryAdd(name, value);
+        Errors ??= new List<Error>();
+        Errors.Add(new Error(name, message, exception));
     }
 
-    public bool HasErrors => Errors.Any();
-    public Dictionary<string, object> Fields => _properties;
+    [JsonIgnore]
+    public bool HasErrors => Errors != null && Errors.Any();
 
     /// <summary>
     /// This constructor just works off the internal dictionary and any 
@@ -106,9 +110,9 @@ public class ComposedResult : DynamicObject
         result = null;
 
         // first check the Properties collection for member
-        if (_properties.Keys.Contains(binder.Name))
+        if (Properties.Keys.Contains(binder.Name))
         {
-            result = _properties[binder.Name];
+            result = Properties[binder.Name];
             return true;
         }
 
@@ -155,7 +159,7 @@ public class ComposedResult : DynamicObject
         }
 
         // no match - set or add to dictionary
-        _properties[binder.Name] = value;
+        Properties[binder.Name] = value;
         return true;
     }
 
@@ -298,7 +302,7 @@ public class ComposedResult : DynamicObject
             try
             {
                 // try to get from properties collection first
-                return _properties[key];
+                return Properties[key];
             }
             catch (KeyNotFoundException ex)
             {
@@ -313,9 +317,9 @@ public class ComposedResult : DynamicObject
         }
         set
         {
-            if (_properties.ContainsKey(key))
+            if (Properties.ContainsKey(key))
             {
-                _properties[key] = value;
+                Properties[key] = value;
                 return;
             }
 
@@ -325,25 +329,34 @@ public class ComposedResult : DynamicObject
             if (miArray != null && miArray.Length > 0)
                 SetProperty(Instance, key, value);
             else
-                _properties[key] = value;
+                Properties[key] = value;
         }
     }
 
     public IDictionary<string, object> AsDictionary()
     {
         var dictionary = new Dictionary<string, object>();
-        foreach (var prop in InstancePropertyInfo)
-            dictionary.Add(prop.Name, prop.GetValue(Instance, null));
+        if (InstanceType != typeof(ComposedResult))
+        {
+            foreach (var prop in InstancePropertyInfo)
+                dictionary.TryAdd(prop.Name, prop.GetValue(Instance, null));
+        }
 
-        foreach (var key in _properties.Keys)
-            dictionary.Add(key, _properties[key]);
+        foreach (var key in Properties.Keys)
+            dictionary.TryAdd(key, Properties[key]);
 
         return dictionary;
     }
 
-    public void SetErrors(List<KeyValuePair<string, object>> errors)
+    public void SetErrors(List<Error> errors)
     {
-        foreach (var error in errors)
-            Errors.Add(error.Key, error.Value);
+        Errors ??= new List<Error>();
+        Errors.AddRange(errors);
     }
+}
+
+public record Error(string Source, string Message, Exception? Exception = null)
+{
+    [JsonIgnore]
+    public Exception? Exception { get; init; } = Exception;
 }

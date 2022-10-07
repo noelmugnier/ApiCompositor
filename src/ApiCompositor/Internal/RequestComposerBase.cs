@@ -27,16 +27,16 @@ internal class RequestComposerBaseWrapperImpl<TRequest, TResponse>:RequestCompos
             tasks.Add(requestDispatcher.Dispatch(provider, resource, token));
         
         var results = await Task.WhenAll(tasks);
-        var errors = new List<KeyValuePair<string, object>>();
+        var errors = new List<Error>();
         
         var composedResult = new ComposedResult();
         foreach (var result in results)
         {
             if(result.HasErrors)
                 errors.AddRange(result.Errors);
-            
-            foreach (var keyValue in result.AsDictionary())
-                composedResult[keyValue.Key] = keyValue.Value;
+            else
+                foreach (var keyValue in result.AsDictionary())
+                    composedResult[keyValue.Key] = keyValue.Value;
         }
 
         if (!errors.Any()) 

@@ -24,7 +24,9 @@ public class ComposerQueryHandler : IComposerQueryHandler
         }
         catch (Exception e)
         {
-            return new ComposedResult();
+            var result = new ComposedResult();
+            result.AddError(e.Source, e.Message, e);
+            return result;
         }
     }
 }

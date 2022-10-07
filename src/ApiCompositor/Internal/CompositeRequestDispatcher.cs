@@ -36,23 +36,14 @@ internal class CompositeRequestDispatcherWrapperImpl<TComposerRequest, TComposit
         catch (Exception e)
         {
             var result = new ComposedResult();
-            result.AddError(e.Source, e.Message);
+            result.AddError(e.Source, e.Message, e);
             return result;
         }
     }
     
-    public override async Task<bool> OnError(ICompositorProvider provider, string requestId,
-        CancellationToken token)
+    public override async Task<bool> OnError(ICompositorProvider provider, string requestId, CancellationToken token)
     {
-        try
-        {
-            var requestHandler = provider.GetCompositeRequestHandler<TCompositeRequest, TCompositeResponse>();
-            await requestHandler.Revert(requestId, token);
-            return true;
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
+        var requestHandler = provider.GetCompositeRequestHandler<TCompositeRequest, TCompositeResponse>();
+        return await requestHandler.Revert(requestId, token);
     }
 }

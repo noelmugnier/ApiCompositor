@@ -24,10 +24,10 @@ public class CreateProductCompositeHandler : ICompositeRequestHandler<CreateSale
         return Task.FromResult(new SalesProduct(resource.Id, resource.Price));
     }
 
-    public Task Revert(string requestId, CancellationToken token)
+    public Task<bool> Revert(string requestId, CancellationToken token)
     {
         _logger.LogWarning($"An error occured on request {requestId}");
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 }
 

@@ -36,7 +36,7 @@ internal class CompositeQueryDispatcherWrapperImpl<TComposerQuery, TCompositeQue
         catch (Exception e)
         {
             var result = new ComposedResult();
-            result.AddError(e.Source, e.Message);
+            result.AddError(e.Source, e.Message, e);
             return result;
         }
     }

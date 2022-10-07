@@ -8,5 +8,5 @@ public interface ICompositeRequestHandler<in TRequest, TResponse> : ICompositeRe
     where TRequest: ICompositeRequest<TResponse>
 {
     Task<TResponse> Handle(TRequest resource, CancellationToken token);
-    Task Revert(string requestId, CancellationToken token);
+    Task<bool> Revert(string requestId, CancellationToken token);
 }

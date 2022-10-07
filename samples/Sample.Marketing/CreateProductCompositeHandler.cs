@@ -28,10 +28,10 @@ public class CreateProductCompositeHandler :
         return Task.FromResult(new MarketingProduct(resource.Id, resource.Name));
     }
 
-    public Task Revert(string requestId, CancellationToken token)
+    public Task<bool> Revert(string requestId, CancellationToken token)
     {
         _logger.LogWarning("An error occured on request {RequestId}", requestId);
-        return Task.CompletedTask;
+        return Task.FromResult(true);
     }
 }
 

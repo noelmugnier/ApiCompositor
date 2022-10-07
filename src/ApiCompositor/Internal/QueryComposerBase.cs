@@ -27,7 +27,7 @@ internal class QueryComposerBaseWrapperImpl<TQuery, TResponse>:QueryComposerBase
             tasks.Add(queryDispatcher.Dispatch(provider, resource, token));
         
         var results = await Task.WhenAll(tasks);
-        var errors = new List<KeyValuePair<string, object>>();
+        var errors = new List<Error>();
         
         var composedResult = new ComposedResult();
         foreach (var result in results)
