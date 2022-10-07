@@ -1,15 +1,19 @@
 ﻿using ApiCompositor.Contracts;
 using ApiCompositor.Contracts.Composite;
+using MediatR;
 using Sample.Compositor.Contracts;
 
 namespace Sample.Marketing;
 
-public record GetMarketingProduct(string RequestId, Guid Id) : ICompositeQuery<MarketingProduct>
+public record GetMarketingProduct(string RequestId, Guid Id)
+    : ICompositeQuery<MarketingProduct>, IRequest<MarketingProduct>
 {
     public DateTimeOffset RequestedOn { get; } = DateTimeOffset.UtcNow;
 }
 
-public class GetProductCompositeHandler : ICompositeQueryHandler<GetMarketingProduct, MarketingProduct>
+public class GetProductCompositeHandler : 
+    ICompositeQueryHandler<GetMarketingProduct, MarketingProduct>,
+    IRequestHandler<GetMarketingProduct, MarketingProduct>
 {
     public Task<MarketingProduct> Handle(GetMarketingProduct resource, CancellationToken token)
     {

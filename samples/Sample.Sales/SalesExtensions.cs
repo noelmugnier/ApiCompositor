@@ -7,9 +7,12 @@ public static class SalesExtensions
 {
     public static IServiceCollection AddSalesHandlers(this IServiceCollection services)
     {
-        services.RegisterAssemblyCompositeHandlers(typeof(SalesProduct).Assembly);
-        services.RegisterAssemblyQueryExecutors(typeof(SalesProduct).Assembly);
-        services.RegisterAssemblyRequestExecutors(typeof(SalesProduct).Assembly);
+        var assembly = typeof(SalesProduct).Assembly;
+        
+        services.RegisterAssemblyCompositeHandlers(assembly);
+        services.RegisterAssemblyQueryExecutors(assembly);
+        services.RegisterAssemblyRequestExecutors(assembly);
+        
         return services;
     }
 }

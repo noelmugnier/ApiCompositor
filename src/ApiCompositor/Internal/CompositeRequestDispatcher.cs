@@ -18,7 +18,7 @@ internal abstract class CompositeRequestDispatcherWrapper<TComposerRequest, TCom
 
 internal class CompositeRequestDispatcherWrapperImpl<TComposerRequest, TCompositeRequest, TComposerResponse, TCompositeResponse> : CompositeRequestDispatcherWrapper<TComposerRequest, TComposerResponse>
     where TComposerRequest : IComposerRequest<TComposerResponse>
-    where TCompositeRequest : ICompositeRequest<TCompositeResponse>, ICompositeRequest<TCompositeRequest>
+    where TCompositeRequest : ICompositeRequest<TCompositeResponse>
 {
     public override async Task<ComposedResult> Dispatch(ICompositorProvider provider, IComposer resource, CancellationToken token)
         => await Handle(provider, (TComposerRequest)resource, token);

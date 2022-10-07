@@ -1,16 +1,20 @@
 ﻿using ApiCompositor.Contracts;
 using ApiCompositor.Contracts.Composite;
+using MediatR;
 using Microsoft.Extensions.Logging;
 using Sample.Compositor.Contracts;
 
 namespace Sample.Marketing;
 
-public record CreateMarketingProduct(string RequestId, Guid Id, string Name, string? Description = null) : ICompositeRequest<MarketingProduct>
+public record CreateMarketingProduct(string RequestId, Guid Id, string Name, string? Description = null) 
+    : ICompositeRequest<MarketingProduct>, IRequest<MarketingProduct>
 {
     public DateTimeOffset RequestedOn { get; } = DateTimeOffset.UtcNow;
 }
 
-public class CreateProductCompositeHandler : ICompositeRequestHandler<CreateMarketingProduct, MarketingProduct>
+public class CreateProductCompositeHandler : 
+    ICompositeRequestHandler<CreateMarketingProduct, MarketingProduct>,
+    IRequestHandler<CreateMarketingProduct, MarketingProduct>
 {
     private readonly ILogger<CreateProductCompositeHandler> _logger;
 
