@@ -11,8 +11,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\ApiCompositor.Contracts\ApiCompositor.Contracts.csproj" />
-      <ProjectReference Include="..\src\ApiCompositor\ApiCompositor.csproj" />
+      <ProjectReference Include="..\ApiCompositor.Contracts\ApiCompositor.Contracts.csproj" />
+      <ProjectReference Include="..\ApiCompositor\ApiCompositor.csproj" />
     </ItemGroup>
 
 </Project>

@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\ApiCompositor.DependencyInjection\ApiCompositor.DependencyInjection.csproj" />
+      <ProjectReference Include="..\..\src\ApiCompositor.DependencyInjection\ApiCompositor.DependencyInjection.csproj" />
       <ProjectReference Include="..\Sample.Compositor.Contracts\Sample.Compositor.Contracts.csproj" />
     </ItemGroup>
 
