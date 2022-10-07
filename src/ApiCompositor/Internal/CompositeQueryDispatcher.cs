@@ -27,10 +27,11 @@ internal class CompositeQueryDispatcherWrapperImpl<TComposerQuery, TCompositeQue
     {
         try
         {
-            var queryHandler = provider.GetCompositeQueryHandler<TCompositeQuery, TCompositeResponse>();
             var mapper = provider.GetCompositorMapper<TComposerQuery, TCompositeQuery, TCompositeResponse>();
-            var result = await queryHandler.Handle(mapper.Map(resource), token);
-            return new ComposedResult(result);
+            var composite = mapper.Map(resource);
+            
+            var executor = provider.GetCompositeQueryExecutor<TCompositeQuery, TCompositeResponse>();
+            return await executor.Execute(composite, token);
         }
         catch (Exception e)
         {

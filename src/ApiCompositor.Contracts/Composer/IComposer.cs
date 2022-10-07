@@ -1,6 +1,7 @@
 ﻿namespace ApiCompositor.Contracts.Composer;
 
-public interface IComposer{
+public interface IComposer
+{
     string RequestId { get; }
     DateTimeOffset RequestedOn { get; }
 }

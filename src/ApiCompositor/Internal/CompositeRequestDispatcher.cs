@@ -18,7 +18,7 @@ internal abstract class CompositeRequestDispatcherWrapper<TComposerRequest, TCom
 
 internal class CompositeRequestDispatcherWrapperImpl<TComposerRequest, TCompositeRequest, TComposerResponse, TCompositeResponse> : CompositeRequestDispatcherWrapper<TComposerRequest, TComposerResponse>
     where TComposerRequest : IComposerRequest<TComposerResponse>
-    where TCompositeRequest : ICompositeRequest<TCompositeResponse>
+    where TCompositeRequest : ICompositeRequest<TCompositeResponse>, ICompositeRequest<TCompositeRequest>
 {
     public override async Task<ComposedResult> Dispatch(ICompositorProvider provider, IComposer resource, CancellationToken token)
         => await Handle(provider, (TComposerRequest)resource, token);
@@ -27,10 +27,11 @@ internal class CompositeRequestDispatcherWrapperImpl<TComposerRequest, TComposit
     {
         try
         {
-            var requestHandler = provider.GetCompositeRequestHandler<TCompositeRequest, TCompositeResponse>();
-            var mapper = provider.GetCompositorMapper<TComposerRequest,TCompositeRequest,TCompositeResponse>();
-            var result = await requestHandler.Handle(mapper.Map(resource), token);
-            return new ComposedResult(result);
+            var mapper = provider.GetCompositorMapper<TComposerRequest, TCompositeRequest, TCompositeResponse>();
+            var composite = mapper.Map(resource);
+            
+            var executor = provider.GetCompositeRequestExecutor<TCompositeRequest, TCompositeResponse>();
+            return await executor.Execute(composite, token);
         }
         catch (Exception e)
         {

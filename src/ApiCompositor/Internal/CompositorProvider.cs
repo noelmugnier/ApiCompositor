@@ -1,10 +1,9 @@
 ﻿using ApiCompositor.Contracts;
 using ApiCompositor.Contracts.Composer;
 using ApiCompositor.Contracts.Composite;
-using ApiCompositor.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ApiCompositor;
+namespace ApiCompositor.Internal;
 
 internal class CompositorProvider : ICompositorProvider
 {
@@ -21,7 +20,7 @@ internal class CompositorProvider : ICompositorProvider
         var handlers = new List<CompositeQueryDispatcher>();
         foreach (var service in services)
         {
-            var (compositeQueryType, compositeResponseType) = GetCompositeTypes(service.GetType(), typeof(IComposerQuery<>));
+            var (compositeQueryType, compositeResponseType) = GetCompositeTypes(service.GetType(), typeof(ICompositeQuery<>));
 
             handlers.Add((CompositeQueryDispatcher) Activator.CreateInstance(
                 typeof(CompositeQueryDispatcherWrapperImpl<,,,>).MakeGenericType(typeof(TQuery), compositeQueryType, typeof(TResponse), compositeResponseType)));
@@ -36,7 +35,7 @@ internal class CompositorProvider : ICompositorProvider
         var handlers = new List<CompositeRequestDispatcher>();
         foreach (var service in services)
         {
-            var (compositeType, compositeResponseType) = GetCompositeTypes(service.GetType(), typeof(IComposerRequest<>));
+            var (compositeType, compositeResponseType) = GetCompositeTypes(service.GetType(), typeof(ICompositeRequest<>));
             
             handlers.Add((CompositeRequestDispatcher) Activator.CreateInstance(
                 typeof(CompositeRequestDispatcherWrapperImpl<,,,>).MakeGenericType(typeof(TRequest), compositeType, typeof(TResponse), compositeResponseType)));
@@ -53,6 +52,16 @@ internal class CompositorProvider : ICompositorProvider
     public ICompositorMapper<TComposerQuery, TCompositeQuery, TCompositeResponse> GetCompositorMapper<TComposerQuery, TCompositeQuery, TCompositeResponse>() where TComposerQuery : IComposer where TCompositeQuery : IComposite<TCompositeResponse>
     {
         return _serviceProvider.GetService<ICompositorMapper<TComposerQuery, TCompositeQuery, TCompositeResponse>>();
+    }
+
+    public ICompositeQueryExecutor<TComposite, TCompositeResponse> GetCompositeQueryExecutor<TComposite, TCompositeResponse>() where TComposite : ICompositeQuery<TCompositeResponse>
+    {
+        return _serviceProvider.GetService<ICompositeQueryExecutor<TComposite, TCompositeResponse>>();
+    }
+
+    public ICompositeRequestExecutor<TComposite, TCompositeResponse> GetCompositeRequestExecutor<TComposite, TCompositeResponse>() where TComposite : ICompositeRequest<TCompositeResponse>
+    {
+        return _serviceProvider.GetService<ICompositeRequestExecutor<TComposite, TCompositeResponse>>();
     }
 
     public ICompositeRequestHandler<TCompositeRequest, TCompositeResponse> GetCompositeRequestHandler<TCompositeRequest, TCompositeResponse>() where TCompositeRequest : ICompositeRequest<TCompositeResponse>

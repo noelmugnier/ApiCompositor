@@ -16,4 +16,6 @@ public interface ICompositorProvider
     ICompositorMapper<TComposer, TComposite, TCompositeResponse> GetCompositorMapper<TComposer, TComposite, TCompositeResponse>() 
         where TComposer : IComposer
         where TComposite : IComposite<TCompositeResponse>;
+    ICompositeQueryExecutor<TComposite, TCompositeResponse> GetCompositeQueryExecutor<TComposite, TCompositeResponse>() where TComposite : ICompositeQuery<TCompositeResponse>;
+    ICompositeRequestExecutor<TComposite, TCompositeResponse> GetCompositeRequestExecutor<TComposite, TCompositeResponse>() where TComposite : ICompositeRequest<TCompositeResponse>;
 }
