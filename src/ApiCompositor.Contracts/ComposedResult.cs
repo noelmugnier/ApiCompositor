@@ -24,19 +24,19 @@ public class ComposedResult : DynamicObject
     /// <summary>
     /// Instance of object passed in
     /// </summary>
-    internal object Instance;
+    internal object _instance;
 
     /// <summary>
     /// Cached type of the instance
     /// </summary>
-    internal Type InstanceType;
+    internal Type _instanceType;
 
     internal PropertyInfo[] InstancePropertyInfo
     {
         get
         {
-            if (_instancePropertyInfo == null && Instance != null)
-                _instancePropertyInfo = Instance.GetType()
+            if (_instancePropertyInfo == null && _instance != null)
+                _instancePropertyInfo = _instance.GetType()
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
             return _instancePropertyInfo;
         }
@@ -50,8 +50,9 @@ public class ComposedResult : DynamicObject
     /// stored on this object/instance
     /// </summary>        
     /// <remarks>Using PropertyBag to support XML Serialization of the dictionary</remarks>
-    [JsonExtensionData]
-    public Dictionary<string, object> Properties { get; } = new Dictionary<string, object>();
+    
+    [JsonIgnore]
+    public Dictionary<string, object?> Properties { get; } = new Dictionary<string, object?>();
     
     [JsonPropertyName("_errors")]
     public List<Error>? Errors { get; private set; } = null;
@@ -64,6 +65,9 @@ public class ComposedResult : DynamicObject
 
     [JsonIgnore]
     public bool HasErrors => Errors != null && Errors.Any();
+    
+    [JsonExtensionData]
+    public IDictionary<string, object> Result => AsDictionary(true);
 
     /// <summary>
     /// This constructor just works off the internal dictionary and any 
@@ -92,9 +96,9 @@ public class ComposedResult : DynamicObject
 
     protected virtual void Initialize(object instance)
     {
-        Instance = instance;
+        _instance = instance;
         if (instance != null)
-            InstanceType = instance.GetType();
+            _instanceType = instance.GetType();
     }
 
 
@@ -118,11 +122,11 @@ public class ComposedResult : DynamicObject
 
 
         // Next check for Public properties via Reflection
-        if (Instance != null)
+        if (_instance != null)
         {
             try
             {
-                return GetProperty(Instance, binder.Name, out result);
+                return GetProperty(_instance, binder.Name, out result);
             }
             catch
             {
@@ -145,11 +149,11 @@ public class ComposedResult : DynamicObject
     public override bool TrySetMember(SetMemberBinder binder, object value)
     {
         // first check to see if there's a native property to set
-        if (Instance != null)
+        if (_instance != null)
         {
             try
             {
-                bool result = SetProperty(Instance, binder.Name, value);
+                bool result = SetProperty(_instance, binder.Name, value);
                 if (result)
                     return true;
             }
@@ -173,12 +177,12 @@ public class ComposedResult : DynamicObject
     /// <returns></returns>
     public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
     {
-        if (Instance != null)
+        if (_instance != null)
         {
             try
             {
                 // check instance passed in for methods to invoke
-                if (InvokeMethod(Instance, binder.Name, args, out result))
+                if (InvokeMethod(_instance, binder.Name, args, out result))
                     return true;
             }
             catch
@@ -204,7 +208,7 @@ public class ComposedResult : DynamicObject
             instance = this;
 
         var miArray =
-            InstanceType.GetMember(name, BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Instance);
+            _instanceType.GetMember(name, BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Instance);
         if (miArray != null && miArray.Length > 0)
         {
             var mi = miArray[0];
@@ -232,13 +236,13 @@ public class ComposedResult : DynamicObject
             instance = this;
 
         var miArray =
-            InstanceType.GetMember(name, BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.Instance);
+            _instanceType.GetMember(name, BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.Instance);
         if (miArray != null && miArray.Length > 0)
         {
             var mi = miArray[0];
             if (mi.MemberType == MemberTypes.Property)
             {
-                ((PropertyInfo) mi).SetValue(Instance, value, null);
+                ((PropertyInfo) mi).SetValue(_instance, value, null);
                 return true;
             }
         }
@@ -260,14 +264,14 @@ public class ComposedResult : DynamicObject
             instance = this;
 
         // Look at the instanceType
-        var miArray = InstanceType.GetMember(name,
+        var miArray = _instanceType.GetMember(name,
             BindingFlags.InvokeMethod |
             BindingFlags.Public | BindingFlags.Instance);
 
         if (miArray != null && miArray.Length > 0)
         {
             var mi = miArray[0] as MethodInfo;
-            result = mi.Invoke(Instance, args);
+            result = mi.Invoke(_instance, args);
             return true;
         }
 
@@ -308,7 +312,7 @@ public class ComposedResult : DynamicObject
             {
                 // try reflection on instanceType
                 object result = null;
-                if (GetProperty(Instance, key, out result))
+                if (GetProperty(_instance, key, out result))
                     return result;
 
                 // nope doesn't exist
@@ -324,26 +328,37 @@ public class ComposedResult : DynamicObject
             }
 
             // check instance for existance of type first
-            var miArray = InstanceType.GetMember(key,
+            var miArray = _instanceType.GetMember(key,
                 BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.Instance);
             if (miArray != null && miArray.Length > 0)
-                SetProperty(Instance, key, value);
+                SetProperty(_instance, key, value);
             else
                 Properties[key] = value;
         }
     }
 
-    public IDictionary<string, object> AsDictionary()
+    public IDictionary<string, object> AsDictionary(bool serializeJson = false)
     {
         var dictionary = new Dictionary<string, object>();
-        if (InstanceType != typeof(ComposedResult))
+        if (_instanceType != typeof(ComposedResult))
         {
             foreach (var prop in InstancePropertyInfo)
-                dictionary.TryAdd(prop.Name, prop.GetValue(Instance, null));
+            {
+                var value = prop.GetValue(_instance, null);
+                if(!serializeJson)
+                    dictionary.TryAdd(prop.Name, value);
+                else if (value != null)
+                    dictionary.TryAdd(System.Text.Json.JsonNamingPolicy.CamelCase.ConvertName(prop.Name), value);
+            }
         }
 
         foreach (var key in Properties.Keys)
-            dictionary.TryAdd(key, Properties[key]);
+        {
+            if(!serializeJson)
+                dictionary.TryAdd(key, Properties[key]);
+            else if(Properties[key] != null)
+                dictionary.TryAdd(System.Text.Json.JsonNamingPolicy.CamelCase.ConvertName(key), Properties[key]);
+        }
 
         return dictionary;
     }
@@ -355,8 +370,18 @@ public class ComposedResult : DynamicObject
     }
 }
 
+public class ComposedResult<T> : ComposedResult
+{
+    public ComposedResult()
+    {
+        Initialize(Activator.CreateInstance<T>());
+    }
+
+    [JsonIgnore]
+    public T Instance => (T) _instance;
+}
+
 public record Error(string Source, string Message, Exception? Exception = null)
 {
-    [JsonIgnore]
     public Exception? Exception { get; init; } = Exception;
 }

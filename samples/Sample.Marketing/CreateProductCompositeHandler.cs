@@ -25,7 +25,7 @@ public class CreateProductCompositeHandler :
 
     public Task<MarketingProduct> Handle(CreateMarketingProduct resource, CancellationToken token)
     {
-        return Task.FromResult(new MarketingProduct(resource.Id, resource.Name));
+        return Task.FromResult(new MarketingProduct(resource.Id, resource.Name, "Bags"));
     }
 
     public Task<bool> Revert(string requestId, CancellationToken token)

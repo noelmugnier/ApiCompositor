@@ -17,7 +17,7 @@ public class GetProductCompositeHandler :
 {
     public Task<MarketingProduct> Handle(GetMarketingProduct resource, CancellationToken token)
     {
-        return Task.FromResult(new MarketingProduct(resource.Id, "Test"){Description = "Zeugma"});
+        return Task.FromResult(new MarketingProduct(resource.Id, "Test", "Bags"){Description = "Zeugma"});
     }
 }
 

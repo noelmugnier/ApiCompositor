@@ -5,21 +5,21 @@ namespace ApiCompositor.Internal;
 
 internal abstract class QueryComposerBase
 {
-    public abstract Task<ComposedResult> Compose(ICompositorProvider provider, object resource, CancellationToken token);
+    public abstract Task<ComposedResult<TU>> Compose<TU>(ICompositorProvider provider, object resource, CancellationToken token);
 }
 
 internal abstract class QueryComposerBaseWrapper<TResponse> : QueryComposerBase
 {
-    public abstract Task<ComposedResult> Compose(ICompositorProvider provider, IComposerQuery<TResponse> resource, CancellationToken token);
+    public abstract Task<ComposedResult<TU>> Compose<TU>(ICompositorProvider provider, IComposerQuery<TResponse> resource, CancellationToken token);
 }
 
 internal class QueryComposerBaseWrapperImpl<TQuery, TResponse>:QueryComposerBaseWrapper<TResponse>
     where TQuery : IComposerQuery<TResponse>
 {
-    public override async Task<ComposedResult> Compose(ICompositorProvider provider, object resource, CancellationToken token) =>
-        await Compose(provider, (IComposerQuery<TResponse>) resource, token);
+    public override async Task<ComposedResult<TU>> Compose<TU>(ICompositorProvider provider, object resource, CancellationToken token) =>
+        await Compose<TU>(provider, (IComposerQuery<TResponse>) resource, token);
     
-    public override async Task<ComposedResult> Compose(ICompositorProvider provider, IComposerQuery<TResponse> resource, CancellationToken token)
+    public override async Task<ComposedResult<TU>> Compose<TU>(ICompositorProvider provider, IComposerQuery<TResponse> resource, CancellationToken token)
     {
         var queryDispatchers = provider.GetCompositeQueryDispatchers<TQuery, TResponse>();
         var tasks = new List<Task<ComposedResult>>();
@@ -29,7 +29,7 @@ internal class QueryComposerBaseWrapperImpl<TQuery, TResponse>:QueryComposerBase
         var results = await Task.WhenAll(tasks);
         var errors = new List<Error>();
         
-        var composedResult = new ComposedResult();
+        var composedResult = new ComposedResult<TU>();
         foreach (var result in results)
         {
             if(result.HasErrors)

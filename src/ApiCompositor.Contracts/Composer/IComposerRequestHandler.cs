@@ -2,5 +2,5 @@
 
 public interface IComposerRequestHandler
 {
-    Task<ComposedResult> Compose<TU>(IComposerRequest<TU> request, CancellationToken token);
+    Task<ComposedResult<TU>> Compose<TU>(IComposerRequest<TU> request, CancellationToken token);
 }

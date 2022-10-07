@@ -1,4 +1,5 @@
-﻿using ApiCompositor.Contracts.Composer;
+﻿using ApiCompositor.Contracts;
+using ApiCompositor.Contracts.Composer;
 using FastEndpoints;
 using Microsoft.AspNetCore.Mvc;
 using Sample.Compositor.Contracts;
@@ -44,7 +45,7 @@ public class CreateProductEndpoint : Endpoint<CreateProductRequest>
             return;
         }
 
-        await SendCreatedAtAsync<GetProductEndpoint>(new {Id = result.Properties.GetValueOrDefault("Id")}, result, cancellation: ct);
+        await SendCreatedAtAsync<GetProductEndpoint>(new { result.Instance.Id }, result, cancellation: ct);
     }
 }
 

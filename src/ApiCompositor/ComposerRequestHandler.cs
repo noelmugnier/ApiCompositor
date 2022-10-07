@@ -13,18 +13,18 @@ public class ComposerRequestHandler : IComposerRequestHandler
         _provider = provider;
     }
 
-    public async Task<ComposedResult> Compose<TU>(IComposerRequest<TU> request, CancellationToken token)
+    public async Task<ComposedResult<TU>> Compose<TU>(IComposerRequest<TU> request, CancellationToken token)
     {
         try
         {
             var requestComposer = (RequestComposerBase) Activator.CreateInstance(
                 typeof(RequestComposerBaseWrapperImpl<,>).MakeGenericType(request.GetType(), typeof(TU)));
 
-            return await requestComposer.Compose(_provider, request, token);
+            return await requestComposer.Compose<TU>(_provider, request, token);
         }
         catch (Exception e)
         {
-            var result = new ComposedResult();
+            var result = new ComposedResult<TU>();
             result.AddError(e.Source, e.Message, e);
             return result;
         }
